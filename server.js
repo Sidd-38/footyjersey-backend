@@ -24,13 +24,27 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Routes
 app.post('/api/register', async (req, res) => {
-  const { name, email, password } = req.body;
-  const exists = await User.findOne({ email });
-  if (exists) return res.status(400).json({ error: 'Email already registered' });
-  const user = new User({ name, email, password });
-  await user.save();
-  res.status(201).json(user);
-});
+    try {
+      console.log("📩 Incoming register request body:", req.body);
+      const { name, email, password } = req.body;
+  
+      const exists = await User.findOne({ email });
+      if (exists) {
+        console.log("⚠️ Email already registered");
+        return res.status(400).json({ error: 'Email already registered' });
+      }
+  
+      const user = new User({ name, email, password });
+      await user.save();
+  
+      console.log("✅ User registered:", user.email);
+      res.status(201).json(user);
+    } catch (err) {
+      console.error("❌ Registration error:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+  
 
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
